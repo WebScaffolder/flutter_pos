@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "618465186180",
+    "firebase_url": "https://mobipos-d474e.firebaseio.com",
+    "project_id": "mobipos-d474e",
+    "storage_bucket": "mobipos-d474e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:618465186180:android:aedb6cc7711696567d8dd1",
+        "android_client_info": {
+          "package_name": "com.orderista.pos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "618465186180-16cvjb88j06f16u94cjg79ctbnq8laoc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAS6yTtb8iETY9Do51QTw6q9a6APH0SSc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "618465186180-16cvjb88j06f16u94cjg79ctbnq8laoc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
