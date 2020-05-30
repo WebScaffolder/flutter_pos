@@ -34,6 +34,8 @@ class _pos_screenState extends State<pos_screen> {
 
   GlobalKey btnKey = GlobalKey();
 
+    var isLargeScreen = false;
+
   //cart lists
   List<String> cart_list_ids = new List();
   List<String> cart_list_name = new List();
@@ -826,13 +828,548 @@ class _pos_screenState extends State<pos_screen> {
                   child: SpinKitChasingDots(color: Colors.deepPurple),
                 );
               count = snapshot.data.documents.length;
-              return new GridView.builder(
+              return new OrientationBuilder(builder: (context, orientation) {
+
+        if (MediaQuery.of(context).size.width > 600) {
+          isLargeScreen = true;
+        } else {
+          isLargeScreen = false;
+        }
+
+        return Row(children: <Widget>[
+          Expanded(
+            flex: 2,
+            child: GridView.builder(
                 itemCount: snapshot.data.documents.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3),
                 itemBuilder: (context, index) => _inventory_tile(
                     context, snapshot.data.documents[index], index),
-              );
+              ),
+          ),
+          isLargeScreen ? Expanded(flex: 2, child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                child: Column(
+                  children: <Widget>[
+                    ListTile(
+                      dense: true,
+                      enabled: true,
+                      leading: Icon(Icons.dns, color: Colors.purple),
+                      title: Text(
+                          languages.skeleton_language_objects[
+                              config.app_language]['total_product_on_cart'],
+                          style: TextStyle(
+                              fontFamily: "Roboto", color: Colors.deepPurple)),
+                      subtitle: Text(
+                          languages.skeleton_language_objects[
+                              config.app_language]['total_items_on_cart'],
+                          style: TextStyle(
+                              fontFamily: "Roboto", color: Colors.purple)),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Text('${cart_list_ids.length}',
+                              style: TextStyle(
+                                  fontFamily: "Roboto", color: Colors.black)),
+                          Text(total_items.toString(),
+                              style: TextStyle(
+                                  fontFamily: "Roboto", color: Colors.black))
+                        ],
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                    ListTile(
+                      dense: true,
+                      enabled: true,
+                      leading:
+                          Icon(Icons.fiber_smart_record, color: Colors.purple),
+                      title: Text(
+                          languages.skeleton_language_objects[
+                              config.app_language]['total_amount_on_cart'],
+                          style: TextStyle(
+                              fontFamily: "Roboto", color: Colors.deepPurple)),
+                      subtitle: Text(
+                          languages.skeleton_language_objects[
+                              config.app_language]['total_tax_amount_on_cart'],
+                          style: TextStyle(
+                              fontFamily: "Roboto", color: Colors.purple)),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Text('${total_amount.toString()}',
+                              style: TextStyle(
+                                  fontFamily: "Roboto", color: Colors.black)),
+                          Text(total_tax_amount.toString(),
+                              style: TextStyle(
+                                  fontFamily: "Roboto", color: Colors.black))
+                        ],
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ],
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                ),
+              ),
+              Container(
+                height: 80.0 * cart_list_ids.length,
+                child: ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: cart_list_ids.length,
+                    itemBuilder: (BuildContext ctxt, int index) {
+                      return new ListTile(
+                        dense: true,
+                        enabled: false,
+                        title: Text(
+                          '${cart_list_name[index].toString()}',
+                          style: TextStyle(
+                              fontFamily: "Roboto", color: Colors.black),
+                          maxLines: 1,
+                        ),
+                        subtitle: Text(
+                            '${cart_list_value[index].toString()} X ${cart_list_count[index].toString()} = ${(cart_list_value[index] * cart_list_count[index]).toString()}',
+                            style: TextStyle(
+                                fontFamily: "Roboto", color: Colors.grey[800])),
+                        trailing: Container(
+                          width: 100,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              IconButton(
+                                onPressed: () {
+                                  if (cart_list_stock[index] >
+                                      cart_list_count[index]) {
+                                    int cart_position = index;
+                                    int current_value =
+                                        cart_list_count[cart_position];
+                                    int new_value = current_value + 1;
+
+                                    setState(() {
+                                      cart_list_count[cart_position] =
+                                          new_value;
+                                      get_total_amount_value();
+                                      get_total_items_on_cart();
+                                      get_total_tax_amount_value();
+                                    });
+                                  } else {
+                                    config.func_do_toast(
+                                        languages.skeleton_language_objects[
+                                                config.app_language]
+                                            ['product_inventory_empty'],
+                                        Colors.red);
+                                  }
+                                },
+                                icon: Icon(
+                                  Icons.add_box,
+                                  color: Colors.green[800],
+                                  size: 35,
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  int cart_position = index;
+                                  int current_value =
+                                      cart_list_count[cart_position];
+
+                                  if (current_value == 1) {
+                                    setState(() {
+                                      cart_list_ids.removeAt(cart_position);
+                                      cart_list_name.removeAt(cart_position);
+                                      cart_list_count.removeAt(cart_position);
+                                      cart_list_value.removeAt(cart_position);
+                                      cart_list_stock.removeAt(cart_position);
+                                      cart_list_tax.removeAt(cart_position);
+                                      product_attributes_list_ids
+                                          .removeAt(cart_position);
+                                      get_total_amount_value();
+                                      get_total_items_on_cart();
+                                      get_total_tax_amount_value();
+                                    });
+                                    config.func_do_toast(
+                                        languages.skeleton_language_objects[
+                                                config.app_language]
+                                            ['msg_item_removed'],
+                                        Colors.red);
+                                  } else {
+                                    int new_value = current_value - 1;
+
+                                    setState(() {
+                                      cart_list_count[cart_position] =
+                                          new_value;
+                                      get_total_amount_value();
+                                      get_total_items_on_cart();
+                                      get_total_tax_amount_value();
+                                    });
+                                  }
+                                },
+                                icon: Icon(
+                                  Icons.indeterminate_check_box,
+                                  color: Colors.red[800],
+                                  size: 35,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        onTap: () {},
+                      );
+                    }),
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Center(
+                child: Column(
+                  children: <Widget>[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: <Widget>[
+                        Container(
+                          width: 20,
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: PopupMenuButton(
+                            itemBuilder: (context) {
+                              var list = List<PopupMenuEntry<Object>>();
+                              list.add(
+                                PopupMenuItem(
+                                  child: Text(
+                                    languages.skeleton_language_objects[
+                                        config.app_language]['choose_customer'],
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                  value: 0,
+                                ),
+                              );
+                              list.add(
+                                PopupMenuDivider(
+                                  height: 10,
+                                ),
+                              );
+
+                              for (var x in config.store_customers) {
+                                customer_list.add(false);
+                                list.add(
+                                  CheckedPopupMenuItem(
+                                    child: Text(
+                                      "${x['customerName']}",
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                    value:
+                                        "${x['id'] + ':' + x['customerName']}",
+                                    checked: false,
+                                  ),
+                                );
+                              }
+
+                              return list;
+                            },
+                            onSelected: (value) {
+                              setState(() {
+                                if (config.get_customer_order_limit(
+                                        value.toString().split(":")[0]) >=
+                                    total_amount) {
+                                  setState(() {
+                                    customer_data = value;
+                                    order_limit = true;
+                                  });
+                                } else {
+                                  setState(() {
+                                    customer_data = value;
+                                    order_limit = false;
+                                  });
+                                }
+                              });
+                            },
+                            icon: Icon(
+                              Icons.person_outline,
+                              size: 26,
+                              color: Colors.blueGrey,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: 20,
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: PopupMenuButton(
+                            itemBuilder: (context) {
+                              var list = List<PopupMenuEntry<Object>>();
+                              list.add(
+                                PopupMenuItem(
+                                  child: Text(
+                                    languages.skeleton_language_objects[
+                                        config.app_language]['enter_discount'],
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                  value: 0,
+                                ),
+                              );
+                              list.add(
+                                PopupMenuDivider(
+                                  height: 20,
+                                ),
+                              );
+                              list.add(
+                                CheckedPopupMenuItem(
+                                  child: TextField(
+                                    maxLines: 1,
+                                    controller: discountController,
+                                    keyboardType: TextInputType.number,
+                                    decoration: InputDecoration(
+                                        hintText:
+                                            languages.skeleton_language_objects[
+                                                    config.app_language]
+                                                ['enter_sale_discount'],
+                                        hintStyle: TextStyle(
+                                            fontSize: 14.0,
+                                            fontFamily: "Roboto"),
+                                        labelText:
+                                            languages.skeleton_language_objects[
+                                                    config.app_language]
+                                                ['sale_discount'],
+                                        labelStyle: TextStyle(
+                                            fontSize: 12.0,
+                                            fontFamily: "Roboto")),
+                                  ),
+                                  value:
+                                      "${discountController.text.length > 1 ? discountController.text : 0} ",
+                                  checked: false,
+                                ),
+                              );
+                              list.add(
+                                PopupMenuDivider(
+                                  height: 20,
+                                ),
+                              );
+                              return list;
+                            },
+                            onSelected: (value) {
+                              setState(() {
+                                customer_data = value;
+                              });
+                            },
+                            icon: Icon(
+                              Icons.donut_large,
+                              size: 26,
+                              color: Colors.blueGrey,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: 20,
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 10,
+                    )
+                  ],
+                ),
+              ),
+              Container(
+                color: Colors.grey[200],
+                height: 160,
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 1,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          Expanded(
+                            flex: 1,
+                            child: GestureDetector(
+                                onTap: () {
+                                  func_offline_checkout(context);
+                                },
+                                child: Container(
+                                  height: 75,
+                                  child: Card(
+                                    elevation: 1,
+                                    color: Colors.white,
+                                    child: ListTile(
+                                      dense: true,
+                                      enabled: false,
+                                      title: Text(
+                                          languages.skeleton_language_objects[
+                                              config.app_language]['cash'],
+                                          style: TextStyle(
+                                              fontFamily: "Roboto",
+                                              color: Colors.black)),
+                                      subtitle: Text(
+                                          languages.skeleton_language_objects[
+                                              config.app_language]['cash'],
+                                          style: TextStyle(
+                                              fontFamily: "Roboto",
+                                              color: Colors.grey[800])),
+                                      trailing: Icon(
+                                        Icons.attach_money,
+                                        color: Colors.green[800],
+                                        size: 25,
+                                      ),
+                                      onTap: () {
+                                        get_stripe_payment();
+                                      },
+                                    ),
+                                  ),
+                                )),
+                          ),
+                          Expanded(
+                              flex: 1,
+                              child: GestureDetector(
+                                onTap: () {
+                                  config.func_do_toast(
+                                      languages.skeleton_language_objects[
+                                              config.app_language]
+                                          ['online_payments_comming_soon'],
+                                      Colors.blue);
+                      //                                  func_show_online_popupmenu();
+                                },
+                                child: Container(
+                                  height: 75,
+                                  child: Card(
+                                    elevation: 1,
+                                    color: Colors.white,
+                                    child: ListTile(
+                                      dense: true,
+                                      enabled: false,
+                                      title: Text(
+                                          languages.skeleton_language_objects[
+                                              config.app_language]['online'],
+                                          style: TextStyle(
+                                              fontFamily: "Roboto",
+                                              color: Colors.black)),
+                                      subtitle: Text('Pay Online',
+                                          style: TextStyle(
+                                              fontFamily: "Roboto",
+                                              color: Colors.grey[800])),
+                                      trailing: Icon(
+                                        Icons.network_check,
+                                        color: Colors.green[800],
+                                        size: 25,
+                                      ),
+                                      onTap: () {},
+                                    ),
+                                  ),
+                                ),
+                              )),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          Expanded(
+                              flex: 1,
+                              child: GestureDetector(
+                                child: Container(
+                                  height: 75,
+                                  child: Card(
+                                    elevation: 1,
+                                    color: Colors.white,
+                                    child: ListTile(
+                                      dense: true,
+                                      enabled: false,
+                                      title: Text(
+                                          languages.skeleton_language_objects[
+                                              config.app_language]['credit'],
+                                          style: TextStyle(
+                                              fontFamily: "Roboto",
+                                              color: Colors.black)),
+                                      subtitle: Text(
+                                          languages.skeleton_language_objects[
+                                                  config.app_language]
+                                              ['pay_by_credit'],
+                                          style: TextStyle(
+                                              fontFamily: "Roboto",
+                                              color: Colors.grey[800])),
+                                      trailing: Icon(
+                                        Icons.person_pin,
+                                        color: Colors.green[800],
+                                        size: 25,
+                                      ),
+                                      onTap: () {},
+                                    ),
+                                  ),
+                                ),
+                                onTap: () {
+                                  if (order_limit == true) {
+                                    func_credit_checkout(context);
+                                  } else {
+                                    config.func_do_toast(
+                                        languages.skeleton_language_objects[
+                                                    config.app_language][
+                                                'customer_order_limit_is_below'] +
+                                            ' $total_amount',
+                                        Colors.red);
+                                  }
+                                },
+                              )),
+                          Expanded(
+                              flex: 1,
+                              child: GestureDetector(
+                                onTap: () {
+                                  func_offline_bank_checkout(context);
+                                },
+                                child: Container(
+                                  height: 75,
+                                  child: Card(
+                                    elevation: 1,
+                                    color: Colors.white,
+                                    child: ListTile(
+                                      dense: true,
+                                      enabled: false,
+                                      title: Text(
+                                          languages.skeleton_language_objects[
+                                              config.app_language]['bank'],
+                                          style: TextStyle(
+                                              fontFamily: "Roboto",
+                                              color: Colors.black)),
+                                      subtitle: Text(
+                                          languages.skeleton_language_objects[
+                                                  config.app_language]
+                                              ['pay_by_bank'],
+                                          style: TextStyle(
+                                              fontFamily: "Roboto",
+                                              color: Colors.grey[800])),
+                                      trailing: Icon(
+                                        Icons.swap_vert,
+                                        color: Colors.green[800],
+                                        size: 25,
+                                      ),
+                                      onTap: () {
+                   //                                      offline_check_out();
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              )),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                color: Colors.grey[300],
+                height: 200,
+              )
+            ],
+          )) : Container(),
+        ]);
+      });
             }));
   }
 
@@ -1225,9 +1762,11 @@ class _pos_screenState extends State<pos_screen> {
     var sale_id = randomAlphaNumeric(20);
     var salesInvoiceNo = int.parse("${randomNumeric(7)}");
 
+    print(config.user_details[0]['id'].toString() );
+
     var values = {
       "createdAt": FieldValue.serverTimestamp(),
-      "createdBy": config.user_details[0]['id'],
+      "createdBy": config.user_details[0]['id'].toString() == null ? null : config.user_details[0]['id'].toString(),
       "id": sale_id,
       "importHash": null,
       "saleDiscount":
@@ -1242,7 +1781,7 @@ class _pos_screenState extends State<pos_screen> {
       "salesStallId": config.store_details[0]['id'],
       "salesTotalAmount": total_amount,
       "updatedAt": FieldValue.serverTimestamp(),
-      "updatedBy": config.user_details[0]['id']
+      "updatedBy": config.user_details[0]['id'].toString() == null ? null : config.user_details[0]['id'].toString()
     };
 
     print(values);
