@@ -1,4 +1,4 @@
-# spree
+# Orderista POS
 
 A new Flutter project.
 
