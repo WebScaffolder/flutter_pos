@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 //import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:flutter_scandit/flutter_scandit.dart';
+
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:spree/Utils/config.dart';
@@ -62,27 +65,72 @@ class _pos_screenState extends State<pos_screen> {
     stream = collectionReference.limit(100).snapshots();
   }
 
+  //extra
+  BarcodeResult _scanBarcode;
+
   @override
   void initState() {
     super.initState();
     get_data();
   }
 
-//  func_scaner() async {
-//    String barcodeScanRes;
-//    // Platform messages may fail, so we use a try/catch PlatformException.
-//    try {
-//      barcodeScanRes =
-//      await FlutterBarcodeScanner.scanBarcode("#ff6666", "Stop", true);
-//
-//    } on PlatformException {
-//      barcodeScanRes = 'Failed to get platform version.';
-//    }
-//
-//    if (!mounted) return;
-//    setState(() {
-//    });
-//  }
+ func_scaner(context) async {
+  //  String barcodeScanRes;
+  //  // Platform messages may fail, so we use a try/catch PlatformException.
+  //  try {
+  //    barcodeScanRes =
+  //    await FlutterBarcodeScanner.scanBarcode("#ff6666", "Stop", true);
+  //    print(barcodeScanRes);
+  //  } on PlatformException {
+  //    barcodeScanRes = 'Failed to get platform version.';
+  //  }
+
+  //  if (!mounted) return;
+  //  setState(() {
+  //    _scanBarcode = barcodeScanRes;
+  //  });
+
+  try {
+                  BarcodeResult result = await FlutterScandit(symbologies: [
+                    Symbology.EAN13_UPCA,
+                    Symbology.CODE128,
+                    Symbology.CODABAR,
+                    Symbology.CODE11,
+                    Symbology.CODE25,
+                    Symbology.CODE32,
+                    Symbology.CODE93,
+                    Symbology.CODE39,
+                    Symbology.UPCE,
+                    Symbology.EAN13_UPCA,
+                    Symbology.EAN8,
+                    Symbology.INTERLEAVED_TWO_OF_FIVE,
+                    Symbology.AZTEC
+                  ], licenseKey: "AVSusAUlGoaBBqFaGSRGMuQYVIxyIrL00kFGA1glAIJrRcVCh3crKhJCF+JJXRLoVV3hZV5e4/yVeUpmTHOpELp/Db5Vd1I5GBo7R0dyEdDWevRTxUIUvG4Et3z8OCw8QSIB+YZfrn4M/PlacLZ5Y5MBUBz+2efTRM7jigbDGFf1nnX8BS5qHn4R519Y0lDfjxPyCaz3BqejQ0HJDtWR2dWZCgJlCHcNGaOl7DhyKoVW29W7bxBNLlhmlSWLaZTIS0+47r4KvMfI7jy7qU9yEYuCN/Q+YydGdNr4KLrfkSgVkrZtdQjLrDRVt3HyH7KkSkqUUCAybXyERicj3NMSg/tBRRPyZE6r1gYi9rQZnNF5gluLnjK1xoZ940ZJUAM29wTQShYliTSlLjVKY2HJ5ZP1aKN2M34Om3/Ur1PwEdwUVtjDMGQtAf+/HMWfEfH6K46QPdpvcLHxwHBAXq4cBFR+wzK0AaWBpdpCQpiFRpsiQKk0aFfIT0b9WtJia2LiPt/9JpsLEAGyjMqeVjyrxocwhutfQQfXVDGQXZ+7wQ1oc+uQRapSOH2nOM1M5JWDZ1cJz3+l3UvKo8mGWl04Hk06+0h1VH9dJGdG3iA7q1oe8w/2M9iK9gwiS671dHHJe7LIJHPWhYU9K8Ky6qG1SVVOsPST8F9X6jqfBSmhuVUhydbA3tg0aH9MVKBUMpeMdcOB62cvfET1FFXiuUkIHkUg/2yxv4siDBEX3cSaXVFkXpZEuBO4sJtDEJPXeUgYVLVKUgoJN3yJgVVdOPwtl3PkX38sKPJ1BaLulZMo5nlLfiGvfw==")
+                      .scanBarcode();
+                  
+                  setState(() {
+                    _scanBarcode = result;
+                  });
+
+                  showDialog(context: context,
+                  child: new AlertDialog(
+        title: Text(languages.skeleton_language_objects[config.app_language]
+            ['scan_or_enter_keyword']),
+        content: Container(
+          height: 200,
+          child: Column(
+            children: <Widget>[
+              Text(_scanBarcode.data),
+              SizedBox(height: 10),
+            ],
+          ),
+        ),
+      )
+                  );
+                } on BarcodeScanException catch (e) {
+                  //_showError(context, e.toString());
+                }
+ }
 
   //search dialog.
   _searchDialog(context) {
@@ -272,8 +320,8 @@ class _pos_screenState extends State<pos_screen> {
           actions: <Widget>[
             IconButton(
               onPressed: () {
-
-               _searchDialog(context);
+                func_scaner(context);
+               //_searchDialog(context);
               },
               icon: Icon(
                 Icons.camera,
